@@ -24,6 +24,8 @@ class HostnameToolWindow (gtk.Window):
         self.change_hostname_button = gtk.Button ("Change hostname")
         self.change_hostname_button.connect ("clicked", self.change_hostname,
                                                 None)
+        self.change_hostname_button.connect_object ("clicked",
+                                                    gtk.Widget.destroy, self)
         self.change_hostname_button.set_size_request (295, -1)
 
         fix = gtk.Fixed ()
@@ -52,7 +54,7 @@ class HostnameToolWindow (gtk.Window):
         hosts_lines = hosts_file.readlines ()
         hosts_file.close ()
 
-        hosts_lines[1] = hosts_lines.split ()[0] + " " + new_hostname
+        hosts_lines[1] = hosts_lines[1].split ()[0] + " " + new_hostname
 
         hosts_file = open ("/etc/hosts", "w")
         hosts_file.writelines (hosts_lines)
@@ -60,6 +62,7 @@ class HostnameToolWindow (gtk.Window):
 
     def get_hostname (self):
         """Returns the current computer name"""
+
         hostname_file = open ("/etc/hostname", "r")
         hostname = hostname_file.read ()
         hostname_file.close ()
