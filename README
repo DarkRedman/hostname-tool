@@ -1,0 +1,10 @@
+hostname_tool.py is the file you need to run.
+
+You need Python 2.6/2.7, and pygtk >= 2.0. You also need root privileges.
+
+To run it, simply do:
+
+chmod +x hostname_tool.py
+sudo ./hostname_tool.py
+
+Make sure to reboot after, and enjoy!
