@@ -1,4 +1,5 @@
-#!/usr/bin/python
+##!/usr/bin/python
+ # -*- coding: utf-8 -*-
 
 import gtk
 
@@ -45,28 +46,47 @@ class HostnameToolWindow (gtk.Window):
         """Changes the name of the computer"""
 
         new_hostname = self.desired_hostname_textbox.get_text ()
+        
+        try:
+            hostname_file = open ("/etc/hostname", "w")
+            hostname_file.write (new_hostname)
+            hostname_file.close ()
 
-        hostname_file = open ("/etc/hostname", "w")
-        hostname_file.write (new_hostname)
-        hostname_file.close ()
+            hosts_file = open ("/etc/hosts", "r")
+            hosts_lines = hosts_file.readlines ()
+            hosts_file.close ()
 
-        hosts_file = open ("/etc/hosts", "r")
-        hosts_lines = hosts_file.readlines ()
-        hosts_file.close ()
+            hosts_lines[1] = hosts_lines[1].split ()[0] + " " + new_hostname
 
-        hosts_lines[1] = hosts_lines[1].split ()[0] + " " + new_hostname
+            hosts_file = open ("/etc/hosts", "w")
+            hosts_file.writelines (hosts_lines)
+            hosts_file.close ()
+        except IOError as (errno, strerror):
+            if errno == 13:
+                self.dia = gtk.Dialog('ERROR', self, 
+                gtk.DIALOG_MODAL  | gtk.DIALOG_DESTROY_WITH_PARENT)
+                self.dia.vbox.pack_start(gtk.Label('You must relaunch the app with root privileges !'))
+                self.button = gtk.Button("Ok")
+                self.button.connect("clicked", self.close_dialog, None)
+                self.dia.vbox.add(self.button)
+                self.dia.show_all()
+                result = self.dia.run()
+                self.dia.hide()
 
-        hosts_file = open ("/etc/hosts", "w")
-        hosts_file.writelines (hosts_lines)
-        hosts_file.close ()
+            else:
+                print("I/O error({0}): {1}".format(errno, strerror))
 
     def get_hostname (self):
         """Returns the current computer name"""
 
         hostname_file = open ("/etc/hostname", "r")
-        hostname = hostname_file.read ()
-        hostname_file.close ()
+        hostname = hostname_file.read()
+        hostname_file.close()
         return hostname
+
+    def close_dialog(self,*args): # we won't use *args
+        if self.dia:
+            self.dia.destroy()
 
 def main ():
     """Starts the Hostname tool"""
